@@ -11,3 +11,6 @@ IMG_EXT  = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
 MIME_MAP = {".png":"image/png", ".jpg":"image/jpeg", ".jpeg":"image/jpeg",
             ".webp":"image/webp", ".gif":"image/gif", ".bmp":"image/bmp"}
 
+DB_DIR   = Path.home() / ".xsearch"
+# gemini api
+
