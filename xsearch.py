@@ -14,3 +14,14 @@ MIME_MAP = {".png":"image/png", ".jpg":"image/jpeg", ".jpeg":"image/jpeg",
 DB_DIR   = Path.home() / ".xsearch"
 # gemini api
 
+def _post(url, body):
+    hdrs = {"Content-Type": "application/json", "x-goog-api-key": API_KEY}
+    for i in range(3):
+        r = requests.post(url, json=body, headers=hdrs, timeout=180)
+        if r.status_code in (429,) or r.status_code >= 500:
+            time.sleep(float(r.headers.get("Retry-After", 2**i)))
+            continue
+        r.raise_for_status()
+        return r.json()
+    raise RuntimeError("api failed after retries")
+
