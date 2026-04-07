@@ -43,3 +43,27 @@ def embed_image(path, mime):
     return _norm(_post(f"{BASE_URL}/{MODEL}:embedContent", body)["embedding"]["values"])
 # chromadb store
 
+class Store:
+    def __init__(self):
+        DB_DIR.mkdir(parents=True, exist_ok=True)
+        c = chromadb.PersistentClient(path=str(DB_DIR))
+        self.col = c.get_or_create_collection("xsearch_images", metadata={"hnsw:space": "cosine"})
+
+    def put(self, path, vec, doc, meta):
+        self.col.upsert(ids=[path], embeddings=[vec.tolist()], documents=[doc], metadatas=[meta])
+
+    def find(self, vec, k=20):
+        n = min(k, self.col.count() or 1)
+        if n == 0: return []
+        r = self.col.query(query_embeddings=[vec.tolist()], n_results=n,
+                           include=["documents","metadatas","distances"])
+        if not r["ids"][0]: return []
+        return [{"path": r["ids"][0][i], "score": 1-r["distances"][0][i]}
+                for i in range(len(r["ids"][0]))]
+
+    def hashes(self):
+        if not self.col.count(): return {}
+        d = self.col.get(include=["metadatas"])
+        return {m["file_path"]:m["file_hash"] for m in d["metadatas"] if m.get("file_path")}
+# indexer
+
