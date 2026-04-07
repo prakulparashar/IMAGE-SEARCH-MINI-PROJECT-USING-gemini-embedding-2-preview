@@ -36,3 +36,10 @@ def embed_query(query):
     data = _post(f"{BASE_URL}/{MODEL}:batchEmbedContents", body)
     return _norm(data["embeddings"][0]["values"])
 
+def embed_image(path, mime):
+    b64 = base64.standard_b64encode(path.read_bytes()).decode()
+    body = {"model": MODEL, "outputDimensionality": DIM,
+            "content": {"parts": [{"inline_data": {"mime_type": mime, "data": b64}}]}}
+    return _norm(_post(f"{BASE_URL}/{MODEL}:embedContent", body)["embedding"]["values"])
+# chromadb store
+
