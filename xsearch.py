@@ -25,3 +25,14 @@ def _post(url, body):
         return r.json()
     raise RuntimeError("api failed after retries")
 
+def _norm(v):
+    a = np.array(v, dtype=np.float32)
+    n = np.linalg.norm(a)
+    return a/n if n else a
+
+def embed_query(query):
+    body = {"requests": [{"model": MODEL, "content": {"parts": [{"text": query}]},
+                          "taskType": "RETRIEVAL_QUERY", "outputDimensionality": DIM}]}
+    data = _post(f"{BASE_URL}/{MODEL}:batchEmbedContents", body)
+    return _norm(data["embeddings"][0]["values"])
+
